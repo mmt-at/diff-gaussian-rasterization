@@ -1,14 +1,3 @@
-/*
- * Copyright (C) 2023, Inria
- * GRAPHDECO research group, https://team.inria.fr/graphdeco
- * All rights reserved.
- *
- * This software is free for non-commercial, research and evaluation use 
- * under the terms of the LICENSE.md file.
- *
- * For inquiries contact  george.drettakis@inria.fr
- */
-
 #include "auxiliary.h"
 #include "forward.h"
 #include<rasterizer.h>
@@ -43,7 +32,6 @@ typedef struct {
     void* list_sorting_space;
 } BinningState;
 
-// 获取更高的最高有效位
 unsigned int cpu_rasterizer_getHigherMsb(unsigned int n) {
     unsigned int msb = sizeof(n) * 4;
     unsigned int step = msb;
@@ -156,9 +144,9 @@ int cpu_rasterizer_compare_keys(const void* a, const void* b)
 }
 
 int cpu_rasterizer_forward(
-	// BufferAllocator geometryBuffer,
-	// BufferAllocator binningBuffer,
-	// BufferAllocator imageBuffer,
+	
+	
+	
     int P, int D, int M,
     const float* background,
     const int width, int height,
@@ -182,7 +170,6 @@ int cpu_rasterizer_forward(
     const float focal_y = height / (2.0f * tan_fovy);
     const float focal_x = width / (2.0f * tan_fovx);
 
-    // 分配GeometryState
     GeometryState geomState;
     geomState.depths = (float*)malloc(sizeof(float) * P);
     geomState.clamped = (int*)malloc(sizeof(int) * P * 3);
@@ -199,13 +186,11 @@ int cpu_rasterizer_forward(
         radii = geomState.internal_radii;
     }
 
-    // 定义tile_grid
     dim3 tile_grid;
     tile_grid.x = (width + BLOCK_X - 1) / BLOCK_X;
     tile_grid.y = (height + BLOCK_Y - 1) / BLOCK_Y;
     tile_grid.z = 1;
 
-    // 分配ImageState
     ImageState imgState;
     int N = width * height;
     imgState.accum_alpha = (float*)malloc(sizeof(float) * N);
@@ -218,7 +203,6 @@ int cpu_rasterizer_forward(
         exit(1);
     }
 
-    // 预处理
     cpu_rasterizer_preprocess(
         P, D, M,
         means3D,
@@ -246,7 +230,7 @@ int cpu_rasterizer_forward(
         prefiltered
     );
 
-    // 计算tiles_touched的前缀和，存储到point_offsets
+    
     uint32_t total_rendered = 0;
     for (int i = 0; i < P; i++)
     {
@@ -256,14 +240,14 @@ int cpu_rasterizer_forward(
 
     int num_rendered = total_rendered;
 
-    // 分配BinningState
-    // BinningState binningState;
+    
+    
     binningState.point_list = (uint32_t*)malloc(sizeof(uint32_t) * num_rendered);
     binningState.point_list_unsorted = (uint32_t*)malloc(sizeof(uint32_t) * num_rendered);
     binningState.point_list_keys = (uint64_t*)malloc(sizeof(uint64_t) * num_rendered);
     binningState.point_list_keys_unsorted = (uint64_t*)malloc(sizeof(uint64_t) * num_rendered);
 
-    // 生成keys和values
+    
     cpu_rasterizer_duplicateWithKeys(
         P,
         geomState.means2D,
@@ -275,34 +259,34 @@ int cpu_rasterizer_forward(
         tile_grid
     );
 
-    // 获取更高的MSB位
+    
     int bit = cpu_rasterizer_getHigherMsb(tile_grid.x * tile_grid.y);
 
-    // 对keys和values进行排序
-    // 使用标准的qsort函数进行排序
+    
+    
 
-    // 创建索引数组
+    
     int* indices = (int*)malloc(sizeof(int) * num_rendered);
     for (int i = 0; i < num_rendered; i++)
     {
         indices[i] = i;
     }
 
-    // // 定义比较函数
-    // int compare_keys(const void* a, const void* b)
-    // {
-    //     int idx_a = *(int*)a;
-    //     int idx_b = *(int*)b;
-    //     uint64_t key_a = binningState.point_list_keys_unsorted[idx_a];
-    //     uint64_t key_b = binningState.point_list_keys_unsorted[idx_b];
-    //     if (key_a < key_b) return -1;
-    //     if (key_a > key_b) return 1;
-    //     return 0;
-    // }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     qsort(indices, num_rendered, sizeof(int), cpu_rasterizer_compare_keys);
 
-    // 根据排序后的索引重新排列keys和values
+    
     for (int i = 0; i < num_rendered; i++)
     {
         int idx = indices[i];
@@ -312,7 +296,7 @@ int cpu_rasterizer_forward(
 
     free(indices);
 
-    // 初始化imgState.ranges为0
+    
     int num_tiles = tile_grid.x * tile_grid.y;
     for (int i = 0; i < num_tiles; i++)
     {
@@ -320,7 +304,7 @@ int cpu_rasterizer_forward(
         imgState.ranges[i].y = 0;
     }
 
-    // 识别每个tile的范围
+    
     if (num_rendered > 0)
     {
         cpu_rasterizer_identifyTileRanges(
@@ -330,7 +314,7 @@ int cpu_rasterizer_forward(
         );
     }
 
-    // 渲染
+    
     const float* feature_ptr = (colors_precomp != NULL) ? colors_precomp : geomState.rgb;
 
     cpu_rasterizer_render(
@@ -347,7 +331,7 @@ int cpu_rasterizer_forward(
         out_color
     );
 
-    // 释放分配的内存
+    
     free(geomState.depths);
     free(geomState.clamped);
     free(geomState.internal_radii);

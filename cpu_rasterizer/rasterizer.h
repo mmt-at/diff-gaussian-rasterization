@@ -1,14 +1,4 @@
-/*
- * Copyright (C) 2023, Inria
- * GRAPHDECO research group, https://team.inria.fr/graphdeco
- * All rights reserved.
- *
- * This software is free for non-commercial, research and evaluation use
- * under the terms of the LICENSE.md file.
- *
- * For inquiries contact  george.drettakis@inria.fr
- */
-
+#pragma once
 #ifndef CPU_RASTERIZER_H_INCLUDED
 #define CPU_RASTERIZER_H_INCLUDED
 
@@ -23,13 +13,10 @@ void cpu_rasterizer_markVisible(
 	float *projmatrix,
 	int *present);
 
-// 定义一个函数类型，它接受一个 size_t 类型的参数并返回 char* 类型
 typedef char* (*BufferAllocator)(size_t);
 
 int cpu_rasterizer_forward(
-	// BufferAllocator geometryBuffer,
-	// BufferAllocator binningBuffer,
-	// BufferAllocator imageBuffer,
+	
 	const int P, int D, int M,
 	const float *background,
 	const int width, int height,
