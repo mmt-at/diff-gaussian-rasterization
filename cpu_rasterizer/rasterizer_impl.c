@@ -3,38 +3,37 @@
 #include<rasterizer.h>
 #include<string.h>
 typedef struct {
-    int P;
+    size_t scan_size;
     float* depths;
+    void* scanning_space;
     int* clamped;
     int* internal_radii;
     float2* means2D;
     float* cov3D;
     float4* conic_opacity;
     float* rgb;
-    unsigned int* tiles_touched;
-    unsigned long scan_size;
-    void* scanning_space;
-    unsigned int* point_offsets;
+    uint32_t* point_offsets;
+    uint32_t* tiles_touched;
 } GeometryState;
 
 typedef struct {
-    float* accum_alpha;
-    unsigned int* n_contrib;
     uint2* ranges;
+    uint32_t* n_contrib;
+    float* accum_alpha;
 } ImageState;
 
 typedef struct {
-    unsigned int* point_list;
-    unsigned int* point_list_unsorted;
-    unsigned long* point_list_keys;
-    unsigned long* point_list_keys_unsorted;
-    unsigned long sorting_size;
+    size_t sorting_size;
+    uint64_t* point_list_keys_unsorted;
+    uint64_t* point_list_keys;
+    uint32_t* point_list_unsorted;
+    uint32_t* point_list;
     void* list_sorting_space;
 } BinningState;
 
-unsigned int cpu_rasterizer_getHigherMsb(unsigned int n) {
-    unsigned int msb = sizeof(n) * 4;
-    unsigned int step = msb;
+uint32_t cpu_rasterizer_getHigherMsb(uint32_t n) {
+    uint32_t msb = sizeof(n) * 4;
+    uint32_t step = msb;
     while (step > 1)
     {
         step /= 2;
@@ -80,9 +79,9 @@ void cpu_rasterizer_duplicateWithKeys(
 
             cpu_rasterizer_getRect(points_xy[idx], radii[idx], &rect_min, &rect_max, grid);
 
-            for (unsigned int y = rect_min.y; y < rect_max.y; y++)
+            for (uint32_t y = rect_min.y; y < rect_max.y; y++)
             {
-                for (unsigned int x = rect_min.x; x < rect_max.x; x++)
+                for (uint32_t x = rect_min.x; x < rect_max.x; x++)
                 {
                     uint64_t key = (uint64_t)(y * grid.x + x);
                     key <<= 32;
@@ -144,9 +143,6 @@ int cpu_rasterizer_compare_keys(const void* a, const void* b)
 }
 
 int cpu_rasterizer_forward(
-	
-	
-	
     int P, int D, int M,
     const float* background,
     const int width, int height,
@@ -230,7 +226,6 @@ int cpu_rasterizer_forward(
         prefiltered
     );
 
-    
     uint32_t total_rendered = 0;
     for (int i = 0; i < P; i++)
     {
@@ -240,14 +235,11 @@ int cpu_rasterizer_forward(
 
     int num_rendered = total_rendered;
 
-    
-    
     binningState.point_list = (uint32_t*)malloc(sizeof(uint32_t) * num_rendered);
     binningState.point_list_unsorted = (uint32_t*)malloc(sizeof(uint32_t) * num_rendered);
     binningState.point_list_keys = (uint64_t*)malloc(sizeof(uint64_t) * num_rendered);
     binningState.point_list_keys_unsorted = (uint64_t*)malloc(sizeof(uint64_t) * num_rendered);
 
-    
     cpu_rasterizer_duplicateWithKeys(
         P,
         geomState.means2D,
@@ -262,31 +254,14 @@ int cpu_rasterizer_forward(
     
     int bit = cpu_rasterizer_getHigherMsb(tile_grid.x * tile_grid.y);
 
-    
-    
-
-    
     int* indices = (int*)malloc(sizeof(int) * num_rendered);
     for (int i = 0; i < num_rendered; i++)
     {
         indices[i] = i;
     }
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
     qsort(indices, num_rendered, sizeof(int), cpu_rasterizer_compare_keys);
 
-    
     for (int i = 0; i < num_rendered; i++)
     {
         int idx = indices[i];
@@ -304,7 +279,6 @@ int cpu_rasterizer_forward(
         imgState.ranges[i].y = 0;
     }
 
-    
     if (num_rendered > 0)
     {
         cpu_rasterizer_identifyTileRanges(
@@ -314,7 +288,6 @@ int cpu_rasterizer_forward(
         );
     }
 
-    
     const float* feature_ptr = (colors_precomp != NULL) ? colors_precomp : geomState.rgb;
 
     cpu_rasterizer_render(
@@ -331,7 +304,6 @@ int cpu_rasterizer_forward(
         out_color
     );
 
-    
     free(geomState.depths);
     free(geomState.clamped);
     free(geomState.internal_radii);

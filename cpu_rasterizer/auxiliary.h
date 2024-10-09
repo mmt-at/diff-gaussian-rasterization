@@ -24,11 +24,11 @@ typedef struct {
 } float4;
 
 typedef struct {
-    unsigned int x, y;
+    uint32_t x, y;
 } uint2;
 
 typedef struct {
-    unsigned int x, y, z;
+    uint32_t x, y, z;
 } dim3;
 
 void cpu_rasterizer_getRect(const float2 p, int max_radius, uint2* rect_min, uint2* rect_max, dim3 grid);

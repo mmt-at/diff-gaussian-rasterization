@@ -1,6 +1,6 @@
 #include "forward.h"
 #include "auxiliary.h"
-#include<math.h>
+#include "math.h"
 
 const float SH_C0 = 0.28209479177387814f;
 const float SH_C1 = 0.4886025119029199f;
@@ -417,9 +417,9 @@ void renderCPU(
     uint32_t vertical_blocks = (H + BLOCK_Y - 1) / BLOCK_Y;
 	uint32_t horizontal_blocks = (W + BLOCK_X - 1) / BLOCK_X;
     
-    for (unsigned int tile_y = 0; tile_y < vertical_blocks; tile_y++)
+    for (uint32_t tile_y = 0; tile_y < vertical_blocks; tile_y++)
     {
-        for (unsigned int tile_x = 0; tile_x < horizontal_blocks; tile_x++)
+        for (uint32_t tile_x = 0; tile_x < horizontal_blocks; tile_x++)
         {
             uint2 pix_min = {tile_x * BLOCK_X, tile_y * BLOCK_Y};
             uint2 pix_max = {min_int(pix_min.x + BLOCK_X, W), min_int(pix_min.y + BLOCK_Y, H)};
@@ -428,9 +428,9 @@ void renderCPU(
             int toDo = range.y - range.x;
 
             
-            for (unsigned int pix_y = pix_min.y; pix_y < pix_max.y; pix_y++)
+            for (uint32_t pix_y = pix_min.y; pix_y < pix_max.y; pix_y++)
             {
-                for (unsigned int pix_x = pix_min.x; pix_x < pix_max.x; pix_x++)
+                for (uint32_t pix_x = pix_min.x; pix_x < pix_max.x; pix_x++)
                 {
                     uint32_t pix_id = W * pix_y + pix_x;
                     float2 pixf = {(float)pix_x, (float)pix_y};

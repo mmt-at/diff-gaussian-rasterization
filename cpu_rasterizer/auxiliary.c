@@ -1,10 +1,18 @@
-#include<auxiliary.h>
+#include "auxiliary.h"
+
+static inline int min_int(int a, int b) {
+    return (a < b) ? a : b;
+}
+
+static inline int max_int(int a, int b) {
+    return (a > b) ? a : b;
+}
 
 void cpu_rasterizer_getRect(const float2 p, int max_radius, uint2* rect_min, uint2* rect_max, dim3 grid) {
-    rect_min->x = (unsigned int)fmin((float)grid.x, fmax(0.0f, floor((p.x - max_radius) / BLOCK_X)));
-    rect_min->y = (unsigned int)fmin((float)grid.y, fmax(0.0f, floor((p.y - max_radius) / BLOCK_Y)));
-    rect_max->x = (unsigned int)fmin((float)grid.x, fmax(0.0f, ceil((p.x + max_radius + BLOCK_X - 1) / BLOCK_X)));
-    rect_max->y = (unsigned int)fmin((float)grid.y, fmax(0.0f, ceil((p.y + max_radius + BLOCK_Y - 1) / BLOCK_Y)));
+    rect_min->x = min_int(grid.x, max_int((int)0, (int)((p.x - max_radius) / BLOCK_X)));
+    rect_min->y = min_int(grid.y, max_int((int)0, (int)((p.y - max_radius) / BLOCK_Y)));
+    rect_max->x = min_int(grid.x, max_int((int)0, (int)((p.x + max_radius + BLOCK_X - 1) / BLOCK_X)));
+    rect_max->y = min_int(grid.y, max_int((int)0, (int)((p.y + max_radius + BLOCK_Y - 1) / BLOCK_Y)));
 }
 
 float3 cpu_rasterizer_transformPoint4x3(const float3 p, const float* matrix) {
